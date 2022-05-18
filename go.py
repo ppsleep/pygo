@@ -51,9 +51,10 @@ class Go():
         width = interval * 19
         for i in range(19):
             x = i * interval + margin
+            # 网格线
             pygame.draw.line(screen, color, (x, margin), (x, width + 1), 1)
             pygame.draw.line(screen, color, (margin, x), (width + 1, x), 1)
-
+            # 棋盘坐标
             text = self.__font.render(str(i + 1), True, (0, 0, 0))
             textRect = text.get_rect()
             textRect.center = (margin / 2, i * interval + margin)
@@ -62,6 +63,17 @@ class Go():
             textRect = text.get_rect()
             textRect.center = (i * interval + margin, margin / 2)
             screen.blit(text, textRect)
+        # 添加星位点
+        for x in [4, 10, 16]:
+            piont_x = x * interval
+            for y in [4, 10, 16]:
+                # 圆滑星位点
+                pygame.gfxdraw.aacircle(
+                    screen, piont_x + 2, y * interval + 2, 4, color)
+                pygame.gfxdraw.aacircle(
+                    screen, piont_x + 2, y * interval + 2, 3, color)
+                pygame.draw.circle(
+                    screen, color, (piont_x + 2, y * interval + 2), 4)
 
     def getPosition(self):
         p = pygame.mouse.get_pos()
@@ -130,7 +142,6 @@ class Go():
             return
 
     # 获取已落子棋子并渲染
-
     def getChesses(self, screen):
         for item in self.__chesses.values():
             color = (0, 0, 0) if item[1] == 1 else (226, 226, 212)
