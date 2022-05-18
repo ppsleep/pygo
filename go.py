@@ -1,4 +1,3 @@
-from re import A
 import pygame
 import pygame.gfxdraw
 import sys
@@ -25,6 +24,8 @@ class Go():
         self.__later = -1
         # 当前步数
         self.__steps = 0
+        # 打劫
+        self.__ko = ""
         self.__font = pygame.font.Font("./static/font/MICROSS.TTF", 14)
 
     def run(self):
@@ -129,6 +130,11 @@ class Go():
         key = self.getKey(p)
         if key in self.__chesses:
             return
+        # 打劫判断
+        if key == self.__ko:
+            return
+        else:
+            self.__ko = ""
 
         self.__later *= -1
         self.__steps += 1
@@ -142,6 +148,7 @@ class Go():
             return
 
     # 获取已落子棋子并渲染
+
     def getChesses(self, screen):
         for item in self.__chesses.values():
             color = (0, 0, 0) if item[1] == 1 else (226, 226, 212)
@@ -262,7 +269,10 @@ class Go():
                         waitRemove = {**waitRemove, **result[0]}
         for k in waitRemove:
             del(self.__chesses[k])
-        return True if len(waitRemove) > 0 else False
+        dead = len(waitRemove)
+        if dead == 1:
+            self.__ko = list(waitRemove.keys())[0]
+        return True if dead > 0 else False
 
     def getDeadStone(self, p, chess):
         result = self.setLiberties(p, chess, {}, {})
