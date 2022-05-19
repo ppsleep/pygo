@@ -1,7 +1,6 @@
 import pygame
 import pygame.gfxdraw
 import sys
-# import threading
 
 # 棋盘大小
 size = 760
@@ -16,7 +15,6 @@ interval = 38
 class Go():
     def __init__(self):
         sys.setrecursionlimit(361 * 361)
-        # threading.stack_size(1073741824)
         pygame.init()
         # 棋子列表
         self.__chesses = {}
@@ -27,6 +25,9 @@ class Go():
         # 打劫
         self.__ko = ""
         self.__font = pygame.font.Font("./static/font/MICROSS.TTF", 14)
+        self.__move = pygame.mixer.Sound("./static/voice/move.wav")
+        self.__take = pygame.mixer.Sound("./static/voice/take.wav")
+        self.__take_multi = pygame.mixer.Sound("./static/voice/take_multi.wav")
 
     def run(self):
         screen = pygame.display.set_mode((size, size))
@@ -141,11 +142,17 @@ class Go():
         self.__chesses[key] = [p, self.__later, self.__steps]
         liberties = self.getLiberties(key, self.__later)
         remove = self.removeFromBoard(self.__later, {})
-        if liberties == 0 and not remove:
+        if liberties == 0 and not remove > 0:
             self.__later *= -1
             self.__steps -= 1
             del(self.__chesses[key])
             return
+        self.__move.play()
+        if remove > 0:
+            if remove < 4:
+                self.__take.play()
+            else:
+                self.__take_multi.play()
 
     # 获取已落子棋子并渲染
 
@@ -272,7 +279,7 @@ class Go():
         dead = len(waitRemove)
         if dead == 1:
             self.__ko = list(waitRemove.keys())[0]
-        return True if dead > 0 else False
+        return dead
 
     def getDeadStone(self, p, chess):
         result = self.setLiberties(p, chess, {}, {})
