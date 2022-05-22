@@ -146,6 +146,8 @@ class Go():
         btn_pass = pygame.Rect.collidepoint(self.__btn_pass, p)
         if new:
             self.__chesses = {}
+            self.__later = -1
+            self.__steps = 0
         elif back:
             if self.__steps > 0:
                 self.__later *= -1
