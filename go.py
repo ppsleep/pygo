@@ -1,6 +1,7 @@
 import pygame
 import pygame.gfxdraw
 import sys
+from lib import color
 
 # 棋盘大小
 size = 760
@@ -24,7 +25,6 @@ class Go():
         self.__steps = 0
         # 打劫
         self.__ko = ""
-        self.__btn_bg = (52, 67, 90)
         self.__font = pygame.font.Font(
             "./static/font/SourceHanSansCN-Regular.otf", 14
         )
@@ -37,7 +37,7 @@ class Go():
         pygame.display.set_caption("Go")
         background = pygame.image.load("./static/img/bg.jpg")
         screen_right = pygame.Surface((300, size))
-        screen_right.fill((42, 52, 65))
+        screen_right.fill(color.bg)
         while True:
             screen.blit(background, (0, 0))
             screen.blit(screen_right, (size, 0))
@@ -56,19 +56,20 @@ class Go():
             pygame.display.flip()
 
     def chessboard(self, screen):
-        color = (0, 0, 0)
         width = interval * 19
         for i in range(19):
             x = i * interval + margin
             # 网格线
-            pygame.draw.line(screen, color, (x, margin), (x, width + 1), 1)
-            pygame.draw.line(screen, color, (margin, x), (width + 1, x), 1)
+            pygame.draw.line(screen, color.black,
+                             (x, margin), (x, width + 1), 1)
+            pygame.draw.line(screen, color.black,
+                             (margin, x), (width + 1, x), 1)
             # 棋盘坐标
-            text = self.__font.render(str(i + 1), True, (0, 0, 0))
+            text = self.__font.render(str(i + 1), True, color.black)
             textRect = text.get_rect()
             textRect.center = (margin / 2, i * interval + margin)
             screen.blit(text, textRect)
-            text = self.__font.render(chr(i + 65), True, (0, 0, 0))
+            text = self.__font.render(chr(i + 65), True, color.black)
             textRect = text.get_rect()
             textRect.center = (i * interval + margin, margin / 2)
             screen.blit(text, textRect)
@@ -78,13 +79,13 @@ class Go():
             for y in [4, 10, 16]:
                 # 圆滑星位点
                 pygame.gfxdraw.aacircle(
-                    screen, piont_x + 2, y * interval + 2, 4, color
+                    screen, piont_x + 2, y * interval + 2, 4, color.black
                 )
                 pygame.gfxdraw.aacircle(
-                    screen, piont_x + 2, y * interval + 2, 3, color
+                    screen, piont_x + 2, y * interval + 2, 3, color.black
                 )
                 pygame.draw.circle(
-                    screen, color, (piont_x + 2, y * interval + 2), 4
+                    screen, color.black, (piont_x + 2, y * interval + 2), 4
                 )
 
     def panel(self, screen):
@@ -94,47 +95,49 @@ class Go():
 
     def btnNew(self, screen):
         new_surface = pygame.Surface((260, 50))
-        new_surface.fill(self.__btn_bg)
+        new_surface.fill(color.btn_bg)
         self.__btn_new = pygame.Rect(size + 20, 20, 260, 50)
         screen.blit(new_surface, self.__btn_new)
+        pygame.draw.rect(screen, color.white, (size + 20, 20, 260, 50), 1)
 
         font = pygame.font.Font(
             "./static/font/SourceHanSansCN-Regular.otf", 18
         )
-        text = font.render("重  新  开  始", True, (255, 255, 255))
+        text = font.render("重  新  开  始", True, color.white)
         textRect = text.get_rect()
         textRect.center = (size + 150, 45)
         screen.blit(text, textRect)
 
     def viewSteps(self, screen):
-        pygame.draw.rect(screen, self.__btn_bg, (size + 20, 90, 150, 70))
+        pygame.draw.rect(screen, color.btn_bg, (size + 20, 90, 150, 70))
         font = pygame.font.Font(
             "./static/font/SourceHanSansCN-Regular.otf", 26
         )
-        text = font.render(str(self.__steps), True, (255, 255, 255))
+        text = font.render(str(self.__steps), True, color.white)
         textRect = text.get_rect()
         textRect.center = (size + 95, 125)
         screen.blit(text, textRect)
 
     def btnAction(self, screen):
         back_surface = pygame.Surface((90, 32))
-        back_surface.fill(self.__btn_bg)
-
+        back_surface.fill(color.btn_bg)
         self.__btn_back = pygame.Rect(size + 190, 90, 90, 32)
         screen.blit(back_surface, self.__btn_back)
-        text = self.__font.render("悔      棋", True, (255, 255, 255))
+        text = self.__font.render("悔      棋", True, color.white)
         textRect = text.get_rect()
         textRect.center = (size + 235, 105)
         screen.blit(text, textRect)
+        pygame.draw.rect(screen, color.white, (size + 190, 90, 90, 32), 1)
 
         pass_surface = pygame.Surface((90, 32))
-        pass_surface.fill(self.__btn_bg)
+        pass_surface.fill(color.btn_bg)
         self.__btn_pass = pygame.Rect(size + 190, 127, 90, 32)
         screen.blit(pass_surface, self.__btn_pass)
-        text = self.__font.render("停 一 手", True, (255, 255, 255))
+        text = self.__font.render("停 一 手", True, color.white)
         textRect = text.get_rect()
         textRect.center = (size + 235, 142)
         screen.blit(text, textRect)
+        pygame.draw.rect(screen, color.white, (size + 190, 127, 90, 32), 1)
 
     def mouse(self, screen):
         p = pygame.mouse.get_pos()
@@ -144,15 +147,20 @@ class Go():
         if new:
             self.__chesses = {}
         elif back:
-            if len(self.__chesses) == 0:
+            if self.__steps > 0:
+                self.__later *= -1
+                self.__steps -= 1
+            chess_len = len(self.__chesses)
+            if chess_len == 0:
                 return
             key = list(self.__chesses.keys())[-1]
             del(self.__chesses[key])
-            self.__later *= -1
-            self.__steps -= 1
+
         elif btn_pass:
             self.__later *= -1
             self.__steps += 1
+            key = "pass," + str(self.__steps)
+            self.__chesses[key] = [(0, 0), self.__later, self.__steps]
         else:
             self.chessMove(screen, True)
 
@@ -186,8 +194,8 @@ class Go():
     def chessMove(self, screen, down=False):
         p = self.getPosition()
         bottom = size - margin + 6
-        bg = (255, 255, 255) if self.__later == -1 else (0, 0, 0)
-        color = (0, 0, 0) if self.__later == -1 else (255, 255, 255)
+        bg = color.white if self.__later == -1 else color.black
+        chess_color = color.black if self.__later == -1 else color.white
 
         if p[0] >= margin and p[1] >= margin and p[0] <= bottom and p[1] <= bottom:
             if down:
@@ -198,12 +206,12 @@ class Go():
             screen_chess = pygame.Surface((100, 100))
             screen_chess.set_colorkey(bg)
             screen_chess.set_alpha(128)
-            pygame.gfxdraw.aacircle(screen, p[0], p[1], csize, color)
+            pygame.gfxdraw.aacircle(screen, p[0], p[1], csize, chess_color)
             # aacircle 在右侧有个微小的缺口，画一个像素弥补这个缺口
-            pygame.gfxdraw.pixel(screen, p[0] + csize, p[1], color)
-            pygame.draw.circle(screen_chess, color, (50, 50), csize)
+            pygame.gfxdraw.pixel(screen, p[0] + csize, p[1], chess_color)
+            pygame.draw.circle(screen_chess, chess_color, (50, 50), csize)
             # 填补因为锯齿带来的空隙
-            pygame.draw.circle(screen_chess, color, (51, 51), csize)
+            pygame.draw.circle(screen_chess, chess_color, (51, 51), csize)
             screen.blit(screen_chess, (p[0] - 50, p[1] - 50))
 
     def chessDown(self, p):
@@ -237,19 +245,22 @@ class Go():
 
     def getChesses(self, screen):
         for item in self.__chesses.values():
-            color = (0, 0, 0) if item[1] == 1 else (226, 226, 212)
+            if item[0][0] + item[0][1] == 0:
+                continue
+            chess_color = color.black if item[1] == 1 else color.chess_white
             pygame.gfxdraw.aacircle(
-                screen, item[0][0], item[0][1], csize, color)
+                screen, item[0][0], item[0][1], csize, chess_color)
             # 填补因为锯齿带来的空隙
             pygame.gfxdraw.aacircle(
-                screen, item[0][0], item[0][1], csize - 1, color
+                screen, item[0][0], item[0][1], csize - 1, chess_color
             )
             # aacircle 在右侧有个微小的缺口，画一个像素弥补这个缺口
-            pygame.gfxdraw.pixel(screen, item[0][0] + csize, item[0][1], color)
-            pygame.draw.circle(screen, color, item[0], csize)
+            pygame.gfxdraw.pixel(
+                screen, item[0][0] + csize, item[0][1], chess_color)
+            pygame.draw.circle(screen, chess_color, item[0], csize)
 
-            highlight = ((205, 205, 205), (0, 0, 0)) if item[1] == 1 else (
-                (255, 255, 255), (226, 226, 212)
+            highlight = (color.gray, color.black) if item[1] == 1 else (
+                color.white, color.chess_white
             )
             self.makeHighlight(
                 screen,
@@ -258,7 +269,7 @@ class Go():
                 pygame.Rect(item[0][0] - 11, item[0][1] - 11, 5, 3)
             )
             fcolor = (255, 0, 0) if item[2] == self.__steps else (
-                0, 0, 0) if item[2] % 2 == 0 else (255, 255, 255)
+                0, 0, 0) if item[2] % 2 == 0 else color.white
             text = self.__font.render(str(item[2]), True, fcolor)
             textRect = text.get_rect()
             textRect.center = (item[0][0], item[0][1] - 1)
@@ -366,7 +377,6 @@ class Go():
 
     def isRemove(self, p, result):
         if len(result[0]) > 0:
-            # k = self.makeKey(p)
             if len(result[1]) == 0:
                 return True
         return False
