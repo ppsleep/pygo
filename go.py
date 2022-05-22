@@ -24,18 +24,25 @@ class Go():
         self.__steps = 0
         # 打劫
         self.__ko = ""
-        self.__font = pygame.font.Font("./static/font/MICROSS.TTF", 14)
+        self.__btn_bg = (52, 67, 90)
+        self.__font = pygame.font.Font(
+            "./static/font/SourceHanSansCN-Regular.otf", 14
+        )
         self.__move = pygame.mixer.Sound("./static/voice/move.wav")
         self.__take = pygame.mixer.Sound("./static/voice/take.wav")
         self.__take_multi = pygame.mixer.Sound("./static/voice/take_multi.wav")
 
     def run(self):
-        screen = pygame.display.set_mode((size, size))
+        screen = pygame.display.set_mode((size + 300, size))
         pygame.display.set_caption("Go")
         background = pygame.image.load("./static/img/bg.jpg")
+        screen_right = pygame.Surface((300, size))
+        screen_right.fill((42, 52, 65))
         while True:
             screen.blit(background, (0, 0))
+            screen.blit(screen_right, (size, 0))
             self.chessboard(screen)
+            self.panel(screen)
             self.getChesses(screen)
             for e in pygame.event.get():
                 if e.type == pygame.QUIT:
@@ -43,7 +50,7 @@ class Go():
                 elif e.type == pygame.MOUSEMOTION:
                     self.chessMove(screen)
                 elif e.type == pygame.MOUSEBUTTONDOWN:
-                    self.chessMove(screen, True)
+                    self.mouse(screen)
 
             self.chessMove(screen)
             pygame.display.flip()
@@ -71,11 +78,83 @@ class Go():
             for y in [4, 10, 16]:
                 # 圆滑星位点
                 pygame.gfxdraw.aacircle(
-                    screen, piont_x + 2, y * interval + 2, 4, color)
+                    screen, piont_x + 2, y * interval + 2, 4, color
+                )
                 pygame.gfxdraw.aacircle(
-                    screen, piont_x + 2, y * interval + 2, 3, color)
+                    screen, piont_x + 2, y * interval + 2, 3, color
+                )
                 pygame.draw.circle(
-                    screen, color, (piont_x + 2, y * interval + 2), 4)
+                    screen, color, (piont_x + 2, y * interval + 2), 4
+                )
+
+    def panel(self, screen):
+        self.btnNew(screen)
+        self.viewSteps(screen)
+        self.btnAction(screen)
+
+    def btnNew(self, screen):
+        new_surface = pygame.Surface((260, 50))
+        new_surface.fill(self.__btn_bg)
+        self.__btn_new = pygame.Rect(size + 20, 20, 260, 50)
+        screen.blit(new_surface, self.__btn_new)
+
+        font = pygame.font.Font(
+            "./static/font/SourceHanSansCN-Regular.otf", 18
+        )
+        text = font.render("重  新  开  始", True, (255, 255, 255))
+        textRect = text.get_rect()
+        textRect.center = (size + 150, 45)
+        screen.blit(text, textRect)
+
+    def viewSteps(self, screen):
+        pygame.draw.rect(screen, self.__btn_bg, (size + 20, 90, 150, 70))
+        font = pygame.font.Font(
+            "./static/font/SourceHanSansCN-Regular.otf", 26
+        )
+        text = font.render(str(self.__steps), True, (255, 255, 255))
+        textRect = text.get_rect()
+        textRect.center = (size + 95, 125)
+        screen.blit(text, textRect)
+
+    def btnAction(self, screen):
+        back_surface = pygame.Surface((90, 32))
+        back_surface.fill(self.__btn_bg)
+
+        self.__btn_back = pygame.Rect(size + 190, 90, 90, 32)
+        screen.blit(back_surface, self.__btn_back)
+        text = self.__font.render("悔      棋", True, (255, 255, 255))
+        textRect = text.get_rect()
+        textRect.center = (size + 235, 105)
+        screen.blit(text, textRect)
+
+        pass_surface = pygame.Surface((90, 32))
+        pass_surface.fill(self.__btn_bg)
+        self.__btn_pass = pygame.Rect(size + 190, 127, 90, 32)
+        screen.blit(pass_surface, self.__btn_pass)
+        text = self.__font.render("停 一 手", True, (255, 255, 255))
+        textRect = text.get_rect()
+        textRect.center = (size + 235, 142)
+        screen.blit(text, textRect)
+
+    def mouse(self, screen):
+        p = pygame.mouse.get_pos()
+        new = pygame.Rect.collidepoint(self.__btn_new, p)
+        back = pygame.Rect.collidepoint(self.__btn_back, p)
+        btn_pass = pygame.Rect.collidepoint(self.__btn_pass, p)
+        if new:
+            self.__chesses = {}
+        elif back:
+            if len(self.__chesses) == 0:
+                return
+            key = list(self.__chesses.keys())[-1]
+            del(self.__chesses[key])
+            self.__later *= -1
+            self.__steps -= 1
+        elif btn_pass:
+            self.__later *= -1
+            self.__steps += 1
+        else:
+            self.chessMove(screen, True)
 
     def getPosition(self):
         p = pygame.mouse.get_pos()
@@ -182,7 +261,7 @@ class Go():
                 0, 0, 0) if item[2] % 2 == 0 else (255, 255, 255)
             text = self.__font.render(str(item[2]), True, fcolor)
             textRect = text.get_rect()
-            textRect.center = item[0]
+            textRect.center = (item[0][0], item[0][1] - 1)
             screen.blit(text, textRect)
 
     def makeHighlight(self, screen, left_color, right_color, target_rect):
